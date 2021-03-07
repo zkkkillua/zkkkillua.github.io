@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/github-apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-github-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-github-16x16-next.png">
+  <link rel="mask-icon" href="/images/github-logo.svg" color="#222">
+  <meta name="google-site-verification" content="RTgcuE8O8uGo_CfqJBTz1zjZZiqDrsw0FN3QntVp6iQ">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.css">
+  <script src="//cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.js"></script>
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zkkkillua.github.io","root":"/","scheme":"Gemini","version":"8.0.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}};
+  </script>
+
+  <meta name="description" content="预备知识首先需要掌握的是查找所有人中得分最高的员工。   如果只查最高分的话，select max(score) from table就足够了。而如果还需要查出相关人员的信息，则需要进行一定的调整。 1. 子查询一种查询方式是使用子查询，首先查找出所有人中最高的得分，然后扫描整个表，查找分数等于最高分的人。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何查找各组得分最高的员工？以“部门工资最高的员工”为例。">
+<meta property="og:url" content="https://zkkkillua.github.io/184-%E9%83%A8%E9%97%A8%E5%B7%A5%E8%B5%84%E6%9C%80%E9%AB%98%E7%9A%84%E5%91%98%E5%B7%A5/index.html">
+<meta property="og:site_name" content="zkkKillua&#39;s Blog">
+<meta property="og:description" content="预备知识首先需要掌握的是查找所有人中得分最高的员工。   如果只查最高分的话，select max(score) from table就足够了。而如果还需要查出相关人员的信息，则需要进行一定的调整。 1. 子查询一种查询方式是使用子查询，首先查找出所有人中最高的得分，然后扫描整个表，查找分数等于最高分的人。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-09-19T13:19:17.000Z">
+<meta property="article:modified_time" content="2020-10-16T09:16:07.611Z">
+<meta property="article:author" content="zkkKillua">
+<meta property="article:tag" content="sql">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://zkkkillua.github.io/184-%E9%83%A8%E9%97%A8%E5%B7%A5%E8%B5%84%E6%9C%80%E9%AB%98%E7%9A%84%E5%91%98%E5%B7%A5/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>如何查找各组得分最高的员工？以“部门工资最高的员工”为例。 | zkkKillua's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">zkkKillua's Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%84%E5%A4%87%E7%9F%A5%E8%AF%86"><span class="nav-text">预备知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%AD%90%E6%9F%A5%E8%AF%A2"><span class="nav-text">1. 子查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E8%BF%9E%E6%8E%A5%E6%9F%A5%E8%AF%A2"><span class="nav-text">2. 连接查询</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-1-%E8%BF%9E%E6%8E%A5%E4%B8%B4%E6%97%B6%E8%A1%A8"><span class="nav-text">2.1. 连接临时表</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-%E8%87%AA%E8%BF%9E%E6%8E%A5"><span class="nav-text">2.2. 自连接</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%84%E7%BB%84%E6%9C%80%E9%AB%98"><span class="nav-text">各组最高</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E7%A4%BA%E8%8C%831"><span class="nav-text">错误示范1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%99%E8%AF%AF%E7%A4%BA%E8%8C%832"><span class="nav-text">错误示范2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AD%A3%E7%A1%AE%E7%AD%94%E6%A1%88"><span class="nav-text">正确答案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%AD%90%E6%9F%A5%E8%AF%A2-1"><span class="nav-text">1. 子查询</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E8%BF%9E%E6%8E%A5%E6%9F%A5%E8%AF%A2-1"><span class="nav-text">2. 连接查询</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-1-%E8%BF%9E%E6%8E%A5%E4%B8%B4%E6%97%B6%E8%A1%A8-1"><span class="nav-text">2.1. 连接临时表</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-%E8%87%AA%E8%BF%9E%E6%8E%A5-1"><span class="nav-text">2.2. 自连接</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A9%E5%B1%95"><span class="nav-text">扩展</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zkkKillua"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">zkkKillua</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">164</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/zkkkillua" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zkkkillua.github.io/184-%E9%83%A8%E9%97%A8%E5%B7%A5%E8%B5%84%E6%9C%80%E9%AB%98%E7%9A%84%E5%91%98%E5%B7%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="zkkKillua">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zkkKillua's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          如何查找各组得分最高的员工？以“部门工资最高的员工”为例。
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-09-19 21:19:17" itemprop="dateCreated datePublished" datetime="2020-09-19T21:19:17+08:00">2020-09-19</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2020-10-16 17:16:07" itemprop="dateModified" datetime="2020-10-16T17:16:07+08:00">2020-10-16</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/sql/" itemprop="url" rel="index"><span itemprop="name">sql</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h2 id="预备知识"><a href="#预备知识" class="headerlink" title="预备知识"></a>预备知识</h2><p>首先需要掌握的是查找所有人中得分最高的员工。  </p>
+<p>如果只查最高分的话，<code>select max(score) from table</code>就足够了。而如果还需要查出相关人员的信息，则需要进行一定的调整。</p>
+<h3 id="1-子查询"><a href="#1-子查询" class="headerlink" title="1. 子查询"></a>1. 子查询</h3><p>一种查询方式是使用子查询，首先查找出所有人中最高的得分，然后扫描整个表，查找分数等于最高分的人。  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> e.Name, e.Salary</span><br><span class="line"><span class="keyword">from</span> Employee e</span><br><span class="line"><span class="keyword">where</span> e.Salary = (</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">max</span>(Salary)</span><br><span class="line">    <span class="keyword">from</span> Employee);</span><br></pre></td></tr></table></figure>
+
+<p>子查询一般可以转换为连接查询的形式。<br>并且<strong>由于子查询过程会生成和删除临时表，因此速度一般要比连接查询慢</strong>。</p>
+<p>另外此处联系一下<strong>相关子查询</strong>和<strong>非相关子查询</strong>：</p>
+<ul>
+<li><strong>非相关子查询</strong>：子查询跟外部查询是无关的，执行过程是先执行子查询返回一个结果供外部查询使用。</li>
+<li><strong>相关子查询</strong>：子查询跟外部查询是相关的，执行过程是外部查询每查询一行，就要将该行的相关数据传递给子查询使用，即每一行都需要进行一次子查询，因此效率较低。</li>
+</ul>
+<h3 id="2-连接查询"><a href="#2-连接查询" class="headerlink" title="2. 连接查询"></a>2. 连接查询</h3><h4 id="2-1-连接临时表"><a href="#2-1-连接临时表" class="headerlink" title="2.1. 连接临时表"></a>2.1. 连接临时表</h4><p>首先查询出所有人中最高的得分，然后将结果作为临时表与原来的表进行连接，通过连接筛选出满足要求的结果。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> e.Name, e.Salary</span><br><span class="line"><span class="keyword">from</span> Employee e <span class="keyword">join</span> (</span><br><span class="line">    <span class="keyword">select</span> <span class="keyword">max</span>(Salary) <span class="keyword">as</span> Salary</span><br><span class="line">    <span class="keyword">from</span> Employee) t <span class="keyword">on</span> e.Salary = t.Salary;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-2-自连接"><a href="#2-2-自连接" class="headerlink" title="2.2. 自连接"></a>2.2. 自连接</h4><p>使用on控制连接条件，通过having计数得到最大值。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> e1.Name, e1.Salary</span><br><span class="line"><span class="keyword">from</span> Employee e1 <span class="keyword">join</span> Employee e2 <span class="keyword">on</span> e1.Salary &lt;= e2.Salary</span><br><span class="line"><span class="keyword">group</span> <span class="keyword">by</span> e1.Id</span><br><span class="line"><span class="keyword">having</span> <span class="keyword">count</span>(<span class="keyword">distinct</span> e2.Salary) = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="各组最高"><a href="#各组最高" class="headerlink" title="各组最高"></a>各组最高</h2><p><strong>文章中使用的表基于leetcode <a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/department-highest-salary/">184. 部门工资最高的员工</a>。</strong></p>
+<p>首先<code>Employee left join Department</code>得到一个员工信息和部门信息关联的临时表。<br>然后<code>group by DepartmentId</code>分组，从每个组中找出max值。  </p>
+<h3 id="错误示范1"><a href="#错误示范1" class="headerlink" title="错误示范1"></a>错误示范1</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> d.Name <span class="keyword">as</span> Department, e.Name <span class="keyword">as</span> Employee, <span class="keyword">max</span>(Salary) <span class="keyword">as</span> Salary</span><br><span class="line"><span class="keyword">from</span> Employee e <span class="keyword">left</span> <span class="keyword">join</span> Department d <span class="keyword">on</span> e.DepartmentId = d.Id</span><br><span class="line"><span class="keyword">group</span> <span class="keyword">by</span> e.DepartmentId;</span><br></pre></td></tr></table></figure>
+<p>上述代码错误的原因是，select中的max只挑选出了一个最大值，而忽略了可能有多个员工的薪资同为最大值的情况。<br><strong>并且！select找出的max(Salary)并不是对应的行的Salary，而是整个组中的Salary</strong><br>另外还存在的问题是，对于mysql 5.7及以上的版本，select的字段必须是被group by包含的字段，或是使用聚合函数。  </p>
+<h3 id="错误示范2"><a href="#错误示范2" class="headerlink" title="错误示范2"></a>错误示范2</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> d.Name <span class="keyword">as</span> Department, e.Name <span class="keyword">as</span> Employee, Salary</span><br><span class="line"><span class="keyword">from</span> Employee e <span class="keyword">left</span> <span class="keyword">join</span> Department d <span class="keyword">on</span> e.DepartmentId = d.Id</span><br><span class="line"><span class="keyword">group</span> <span class="keyword">by</span> e.DepartmentId</span><br><span class="line"><span class="keyword">having</span> Salary = <span class="keyword">max</span>(Salary);</span><br></pre></td></tr></table></figure>
+<p>上述代码看似解决了max只能去除最大值的问题，以及max(Salary)不是对应行的Salary的问题.<br>但是having子句中是不能出现非聚合函数中的属性名的，原因是group by分组之后得到的是组中的1条数据，所以having Salary只能获得这一条数据的Salary。<br>解决方法是不要在having子句中出现非聚合函数和非具体数据的其他字段。  </p>
+<h3 id="正确答案"><a href="#正确答案" class="headerlink" title="正确答案"></a>正确答案</h3><h4 id="1-子查询-1"><a href="#1-子查询-1" class="headerlink" title="1. 子查询"></a>1. 子查询</h4><p>首先找出每个分组及其最大值，然后判断表中每条数据的分组和Salary是否和这个相等。  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> d.Name <span class="keyword">as</span> Department, e.Name <span class="keyword">as</span> Employee, Salary</span><br><span class="line"><span class="keyword">from</span> Employee e <span class="keyword">join</span> Department d <span class="keyword">on</span> e.DepartmentId = d.Id</span><br><span class="line"><span class="keyword">where</span> (e.DepartmentId, e.Salary) <span class="keyword">in</span> (</span><br><span class="line">    <span class="keyword">select</span> DepartmentId, <span class="keyword">max</span>(Salary)</span><br><span class="line">    <span class="keyword">from</span> Employee</span><br><span class="line">    <span class="keyword">group</span> <span class="keyword">by</span> DepartmentId</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-连接查询-1"><a href="#2-连接查询-1" class="headerlink" title="2. 连接查询"></a>2. 连接查询</h4><h5 id="2-1-连接临时表-1"><a href="#2-1-连接临时表-1" class="headerlink" title="2.1. 连接临时表"></a>2.1. 连接临时表</h5><p>Employee和查询出来的每个分组的最大值连接。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> d.Name <span class="keyword">as</span> Department, e.Name <span class="keyword">as</span> Employee, e.Salary</span><br><span class="line"><span class="keyword">from</span> Employee e <span class="keyword">join</span> Department d <span class="keyword">on</span> e.DepartmentId = d.Id <span class="keyword">join</span> (</span><br><span class="line">    <span class="keyword">select</span> DepartmentId, <span class="keyword">max</span>(Salary) <span class="keyword">as</span> Salary</span><br><span class="line">    <span class="keyword">from</span> Employee</span><br><span class="line">    <span class="keyword">group</span> <span class="keyword">by</span> DepartmentId) t <span class="keyword">on</span> e.DepartmentId = t.DepartmentId <span class="keyword">and</span> e.Salary = t.Salary;</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-2-自连接-1"><a href="#2-2-自连接-1" class="headerlink" title="2.2. 自连接"></a>2.2. 自连接</h5><p>Employee和自身连接，on的条件为部门相同且同时约束Salary的大小。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> d.Name <span class="keyword">as</span> Department, e1.Name <span class="keyword">as</span> Employee, e1.Salary</span><br><span class="line"><span class="keyword">from</span> Employee e1 <span class="keyword">join</span> Department d <span class="keyword">on</span> e1.DepartmentId = d.Id <span class="keyword">join</span> Employee e2 <span class="keyword">on</span> e1.DepartmentId = e2.DepartmentId <span class="keyword">and</span> e1.Salary &lt;= e2.Salary</span><br><span class="line"><span class="keyword">group</span> <span class="keyword">by</span> e1.Id</span><br><span class="line"><span class="keyword">having</span> <span class="keyword">count</span>(<span class="keyword">distinct</span> e2.Salary) = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>从最高扩展到前N高/第N高如何计算，请参考：</p>
+<p><a href="https://zkkkillua.github.io/185-%E9%83%A8%E9%97%A8%E5%B7%A5%E8%B5%84%E5%89%8D%E4%B8%89%E9%AB%98%E7%9A%84%E6%89%80%E6%9C%89%E5%91%98%E5%B7%A5/">从“各组得分最高的员工”到“各组得分前N高的员工“，以”部门公司前三高的所有员工“为例。</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/sql/" rel="tag"># sql</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/181-%E8%B6%85%E8%BF%87%E7%BB%8F%E7%90%86%E6%94%B6%E5%85%A5%E7%9A%84%E5%91%98%E5%B7%A5/" rel="prev" title="181.超过经理收入的员工">
+                  <i class="fa fa-chevron-left"></i> 181.超过经理收入的员工
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/subsets/" rel="next" title="78.子集">
+                  78.子集 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zkkKillua</span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <script>
+    NProgress.configure({
+      showSpinner: true
+    });
+    NProgress.start();
+    document.addEventListener('readystatechange', () => {
+      if (document.readyState === 'interactive') {
+        NProgress.inc(0.8);
+      }
+      if (document.readyState === 'complete') {
+        NProgress.done();
+      }
+    });
+    document.addEventListener('pjax:send', () => {
+      NProgress.start();
+    });
+    document.addEventListener('pjax:success', () => {
+      NProgress.done();
+    });
+  </script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
