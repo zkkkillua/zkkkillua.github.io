@@ -217,7 +217,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">165</span>
+          <span class="site-state-item-count">166</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -263,6 +263,85 @@
       
 
       
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zkkkillua.github.io/unique-binary-search-trees/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="zkkKillua">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zkkKillua's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/unique-binary-search-trees/" class="post-title-link" itemprop="url">96.不同的二叉搜索树</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-07-15 18:22:07" itemprop="dateCreated datePublished" datetime="2020-07-15T18:22:07+08:00">2020-07-15</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2020-09-13 20:48:47" itemprop="dateModified" datetime="2020-09-13T20:48:47+08:00">2020-09-13</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="1-动态规划"><a href="#1-动态规划" class="headerlink" title="1. 动态规划"></a>1. 动态规划</h2><p>设<code>G(n)</code>是以1 … n为节点组成的二叉搜索树的种数，<code>f(i)</code>是以i为根节点的二叉搜索树的种数，则有：<br><code>G(n) = f(1) + f(2) + ... + f(n)</code><br>以<code>f(i)</code>为例，其左子树为1 … i-1节点组成的二叉搜索树，右子树为i+1 … n节点组成的二叉搜索树，即<br><code>f(i) = G(i - 1) * G(n - i)</code><br>综上，有：<br><code>G(n) = G(0)G(n-1) + G(1)G(n-2) + ... + G(n-1)G(0)</code><br>时间复杂度：<code>(n^2)</code>，需要算n个<code>G(i)</code>，每个需要<code>O(n)</code>。<br>空间复杂度：<code>O(n)</code>。  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">numTrees</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>* g = <span class="keyword">new</span> <span class="keyword">int</span>[n + <span class="number">1</span>]();</span><br><span class="line">        <span class="comment">// new的过程是 分配空间 - 使用默认构造函数初始化</span></span><br><span class="line">        <span class="comment">// 而对于内置数据类型，new仅分配内存而不进行初始化，需要加()表示进行初始化</span></span><br><span class="line">        <span class="comment">// int* a = new int [10](1, 2) 之类的这种在()内部指定值的方法是错误的</span></span><br><span class="line">        <span class="comment">// 上一行的()可以改为&#123;&#125;代表列表初始化</span></span><br><span class="line">        g[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">        g[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">2</span>; i &lt;= n; i++)</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; i; j++)</span><br><span class="line">                g[i] += g[j] * g[i - <span class="number">1</span> - j];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> ans = g[n];</span><br><span class="line">        <span class="keyword">delete</span> []g;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -725,7 +804,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/min-stack/" class="post-title-link" itemprop="url">115.最小栈</a>
+            <a href="/min-stack/" class="post-title-link" itemprop="url">155. 最小栈</a>
         </h2>
 
         <div class="post-meta-container">
@@ -743,7 +822,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2020-09-13 20:30:09" itemprop="dateModified" datetime="2020-09-13T20:30:09+08:00">2020-09-13</time>
+        <time title="修改时间：2021-03-09 21:08:16" itemprop="dateModified" datetime="2021-03-09T21:08:16+08:00">2021-03-09</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1024,98 +1103,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/maximal-square/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://zkkkillua.github.io/subtree-of-another-tree/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="zkkKillua">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zkkKillua's Blog">
-    </span>
-
-    
-    
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/subtree-of-another-tree/" class="post-title-link" itemprop="url">572.另一棵树的子树</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-05-08 00:04:53" itemprop="dateCreated datePublished" datetime="2020-05-08T00:04:53+08:00">2020-05-08</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2020-09-13 20:43:50" itemprop="dateModified" datetime="2020-09-13T20:43:50+08:00">2020-09-13</time>
-      </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="相关题目："><a href="#相关题目：" class="headerlink" title="相关题目："></a>相关题目：</h2><p><strong>100. 相同的树</strong>  </p>
-<h2 id="1-递归"><a href="#1-递归" class="headerlink" title="1. 递归"></a>1. 递归</h2><p>t是s的子树，则可能是：  </p>
-<ol>
-<li>s的子树</li>
-<li>s的左子树的子树</li>
-<li>s的右子树的子树</li>
-</ol>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/subtree-of-another-tree/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
