@@ -217,7 +217,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">166</span>
+          <span class="site-state-item-count">167</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -263,6 +263,95 @@
       
 
       
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zkkkillua.github.io/interleaving-string/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="zkkKillua">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zkkKillua's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/interleaving-string/" class="post-title-link" itemprop="url">97.交错字符串</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-07-18 17:39:45" itemprop="dateCreated datePublished" datetime="2020-07-18T17:39:45+08:00">2020-07-18</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2020-09-13 19:50:12" itemprop="dateModified" datetime="2020-09-13T19:50:12+08:00">2020-09-13</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="1-递归"><a href="#1-递归" class="headerlink" title="1. 递归"></a>1. 递归</h2><p>第一反应是双指针，s3判断一个，对应的s1或者s2向后移一位。<br>但问题在于，当s1和s2的当前位相同时，无法确定s1/s2向后移位。<br>如果加上回溯，则跟递归类似。<br>复杂度指数级。<br>可以通过记忆化降低复杂度。  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">isInterleave</span><span class="params">(<span class="built_in">string</span> s1, <span class="built_in">string</span> s2, <span class="built_in">string</span> s3)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> m = s1.length(), n = s2.length();</span><br><span class="line">        <span class="keyword">if</span> (m + n != s3.length())</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (m == <span class="number">0</span> &amp;&amp; n == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (m == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s2[<span class="number">0</span>] == s3[<span class="number">0</span>])</span><br><span class="line">                <span class="keyword">return</span> isInterleave(s1, s2.substr(<span class="number">1</span>), s3.substr(<span class="number">1</span>));</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (s1[<span class="number">0</span>] == s3[<span class="number">0</span>])</span><br><span class="line">                <span class="keyword">return</span> isInterleave(s1.substr(<span class="number">1</span>), s2, s3.substr(<span class="number">1</span>));</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (s1[<span class="number">0</span>] == s3[<span class="number">0</span>] &amp;&amp; s2[<span class="number">0</span>] != s3[<span class="number">0</span>])</span><br><span class="line">                <span class="keyword">return</span> isInterleave(s1.substr(<span class="number">1</span>), s2, s3.substr(<span class="number">1</span>));</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (s1[<span class="number">0</span>] != s3[<span class="number">0</span>] &amp;&amp; s2[<span class="number">0</span>] == s3[<span class="number">0</span>])</span><br><span class="line">                <span class="keyword">return</span> isInterleave(s1, s2.substr(<span class="number">1</span>), s3.substr(<span class="number">1</span>));</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (s1[<span class="number">0</span>] == s3[<span class="number">0</span>] &amp;&amp; s2[<span class="number">0</span>] == s3[<span class="number">0</span>])</span><br><span class="line">                <span class="keyword">return</span> isInterleave(s1.substr(<span class="number">1</span>), s2, s3.substr(<span class="number">1</span>)) || isInterleave(s1, s2.substr(<span class="number">1</span>), s3.substr(<span class="number">1</span>));</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-动态规划"><a href="#2-动态规划" class="headerlink" title="2. 动态规划"></a>2. 动态规划</h2><p><code>f[i][j]</code>代表s1的前i个字符和s2的前j个字符是否符合s3的前i+j个字符。<br><img src="dp1.png" alt="dp"><br>时间复杂度：<code>O(mn)</code><br>空间复杂度：<code>O(mn)</code>，但是因为更新只需要上一行，所以可以优化到<code>O(n)</code>的空间  </p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/interleaving-string/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -1015,99 +1104,6 @@
           <h2 id="1-二分"><a href="#1-二分" class="headerlink" title="1. 二分"></a>1. 二分</h2><p>时间复杂度：<code>O(logn)</code>，空间复杂度<code>O(1)</code>。  </p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">mySqrt</span><span class="params">(<span class="keyword">int</span> x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (x &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> left = <span class="number">0</span>, right = x;</span><br><span class="line">        <span class="keyword">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (left &lt;= right) &#123;</span><br><span class="line">            <span class="keyword">int</span> mid = left + (right - left) / <span class="number">2</span>;</span><br><span class="line">            <span class="keyword">long</span> <span class="keyword">long</span> midv = (<span class="keyword">long</span> <span class="keyword">long</span>)mid * mid;</span><br><span class="line">            <span class="keyword">if</span> (midv == x) &#123;</span><br><span class="line">                ans = mid;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (midv &lt; x) &#123;</span><br><span class="line">                ans = mid;</span><br><span class="line">                left = mid + <span class="number">1</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> </span><br><span class="line">                right = mid - <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://zkkkillua.github.io/maximal-square/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="zkkKillua">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zkkKillua's Blog">
-    </span>
-
-    
-    
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/maximal-square/" class="post-title-link" itemprop="url">221.最大正方形</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2020-05-09 13:27:42" itemprop="dateCreated datePublished" datetime="2020-05-09T13:27:42+08:00">2020-05-09</time>
-    </span>
-      <span class="post-meta-item">
-        <span class="post-meta-item-icon">
-          <i class="far fa-calendar-check"></i>
-        </span>
-        <span class="post-meta-item-text">更新于</span>
-        <time title="修改时间：2020-09-13 20:18:19" itemprop="dateModified" datetime="2020-09-13T20:18:19+08:00">2020-09-13</time>
-      </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="1-动态规划"><a href="#1-动态规划" class="headerlink" title="1. 动态规划"></a>1. 动态规划</h2><p>设<code>dp[i][j]</code>代表以<code>matrix[i][j]</code>为右下角的最大正方形的边长。<br>当<code>matrix[i][j] == 0</code>时，<code>dp[i][j] = 0</code>.<br>当<code>matrix[i][j] == 1</code>时，<code>dp[i][j] = min(dp[i-1][j-1], dp[i][j-1], dp[i-1][j]) + 1</code>.<br>如果越界，则上述min取0.  </p>
-<p><code>matrix[i][j] == 1</code>的状态转移方程如上是因为：  </p>
-<ol>
-<li>假如<code>dp[i][j]</code>根据<code>dp[i-1][j-1]</code>来求，则需要判断i行j列的连续的1最多有多少，然后取<code>min(dp[i-1][j-1], i行的1, j列的1)</code>再加上1就是<code>dp[i][j]</code>。  </li>
-<li>假如<code>dp[i][j]</code>根据<code>dp[i][j-1]</code>来求，则需要判断j列的连续的1最多有多少，如果j列的小，则<code>dp[i][j] = j列 + 1</code>，而如果j列的大，还需要判断<code>i-dp[i][j-1]</code>行有没有足够的1使得可以形成<code>dp[i][j] = dp[i][j-1] + 1</code>。<br><img src="draft_ij-1.png" alt="draft_ij-1">  </li>
-<li>假如<code>dp[i][j]</code>根据<code>dp[i-1][j]</code>来求，则需要判断i行的连续的1最多有多少，如果i行的小，则<code>dp[i][j] = i行 + 1</code>，而如果i行的大，还需要判断<code>j-dp[i][j-1]</code>列有没有足够的1使得可以形成<code>dp[i][j] = dp[i-1][j] + 1</code>。<br><img src="draft_i-1j.png" alt="draft_i-1j">  </li>
-</ol>
-<p>如果按照上面三种之一的求法，需要在遍历到每个点的时候，最多还要判断<code>O(min(m, n))</code>次，因此时间复杂度是<code>O(mn*min(m, n))</code>。<br>而我们可以发现，1需要的i行j列的连续的1的个数在<code>dp[i][j-1]</code>和<code>dp[i-1][j]</code>中分别有表示，2需要的j列的连续的1在<code>dp[i-1][j]</code>中有所表示，需要的<code>i-dp[i][j-1]</code>行的1的个数在<code>dp[i-1][j-1]</code>和<code>dp[i][j-1]</code>中有所表示。  </p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/maximal-square/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
       
     </div>
 

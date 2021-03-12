@@ -217,7 +217,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">166</span>
+          <span class="site-state-item-count">167</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -327,6 +327,89 @@
 <li><code>python hexoer.py</code> 并等待完成。</li>
 </ol>
 
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zkkkillua.github.io/verify-preorder-serialization-of-a-binary-tree/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="zkkKillua">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zkkKillua's Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/verify-preorder-serialization-of-a-binary-tree/" class="post-title-link" itemprop="url">331. 验证二叉树的前序序列化</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-03-12 10:47:02 / 修改时间：10:49:33" itemprop="dateCreated datePublished" datetime="2021-03-12T10:47:02+08:00">2021-03-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h2 id="1-辅助栈"><a href="#1-辅助栈" class="headerlink" title="1. 辅助栈"></a>1. 辅助栈</h2><p>使用一个辅助栈记录当前期待访问的是栈中元素的左子节点还是右子节点。<br>如果栈顶记录的是左子节点，则修改为期待访问右子节点。<br>如果栈顶记录的是右子节点，代表当前访问的节点是其右子节点，弹出栈顶。<br>如果访问的是数字，将其入栈，之后访问的是它的子树。<br>如果访问的是#，不入栈，因为其对应的栈顶节点的左子树或者右子树为空。<br>时间<code>O(n)</code>，空间<code>O(n)</code>。  </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">isValidSerialization</span><span class="params">(<span class="built_in">string</span> preorder)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> n = preorder.length();</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span> || (n &gt; <span class="number">1</span> &amp;&amp; preorder[<span class="number">0</span>] == <span class="string">&#x27;#&#x27;</span>))</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">1</span> &amp;&amp; preorder[<span class="number">0</span>] == <span class="string">&#x27;#&#x27;</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">stack</span>&lt;<span class="keyword">bool</span>&gt; isLeft;</span><br><span class="line">        <span class="keyword">int</span> idx = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (idx &lt; n &amp;&amp; preorder[idx] &gt;= <span class="string">&#x27;0&#x27;</span> &amp;&amp; preorder[idx] &lt;= <span class="string">&#x27;9&#x27;</span>)</span><br><span class="line">            idx++;</span><br><span class="line">        isLeft.push(<span class="literal">true</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">while</span> (!isLeft.empty() &amp;&amp; idx &lt; n) &#123;</span><br><span class="line">            <span class="keyword">if</span> (preorder[idx] == <span class="string">&#x27;,&#x27;</span>) &#123;</span><br><span class="line">                idx++;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (preorder[idx] == <span class="string">&#x27;#&#x27;</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (isLeft.top() == <span class="literal">true</span>)</span><br><span class="line">                    isLeft.top() = <span class="literal">false</span>;   <span class="comment">// stack.top() returns a &quot;reference&quot;</span></span><br><span class="line">                <span class="keyword">else</span> </span><br><span class="line">                    isLeft.pop();</span><br><span class="line">                idx++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">while</span> (idx &lt; n &amp;&amp; preorder[idx] &gt;= <span class="string">&#x27;0&#x27;</span> &amp;&amp; preorder[idx] &lt;= <span class="string">&#x27;9&#x27;</span>)</span><br><span class="line">                    idx++;</span><br><span class="line">                <span class="keyword">if</span> (isLeft.top() == <span class="literal">true</span>) </span><br><span class="line">                    isLeft.top() = <span class="literal">false</span>;</span><br><span class="line">                <span class="keyword">else</span> </span><br><span class="line">                    isLeft.pop();</span><br><span class="line">                isLeft.push(<span class="literal">true</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> isLeft.empty() &amp;&amp; idx == n;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-优化空间到O-1"><a href="#2-优化空间到O-1" class="headerlink" title="2. 优化空间到O(1)"></a>2. 优化空间到<code>O(1)</code></h2><p>方法1中使用的栈记录了当前期待的是每个节点的左子树还是右子树，使得我们可以直接构建出这棵树。<br>但实际上并不需要这么详细的信息，因为每个节点都是首先期待左子树，之后期待右子树，然后出栈。<br>所以我们可以只用一个变量记录栈中节点期待的子树的总数目，当遇到下一个节点时，期待–。减小的期待可能是栈顶节点的左子树也可能是其右子树，但我们并不关心。<br>所以将方法1中的栈改为一个整型变量<code>expect</code>，模拟一个虚拟栈即可。<br>时间<code>O(n)</code>，空间<code>O(1)</code>。  </p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/verify-preorder-serialization-of-a-binary-tree/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -957,90 +1040,6 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/russian-doll-envelopes/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://zkkkillua.github.io/counting-bits/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="zkkKillua">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="zkkKillua's Blog">
-    </span>
-
-    
-    
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/counting-bits/" class="post-title-link" itemprop="url">338. 比特位计数</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2021-03-03 11:31:26 / 修改时间：11:35:10" itemprop="dateCreated datePublished" datetime="2021-03-03T11:31:26+08:00">2021-03-03</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/leetcode/" itemprop="url" rel="index"><span itemprop="name">leetcode</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <h2 id="1-分区间动态规划"><a href="#1-分区间动态规划" class="headerlink" title="1. 分区间动态规划"></a>1. 分区间动态规划</h2><p>通过观察一段连续数字的二进制可以发现，<code>[2^i, 2^(i+1))</code>部分实际是在之前的二进制数字前面加一位1.<br><img src="dp1.jpg" style="zoom:30%">  </p>
-<p>所以可以根据<code>2^i</code>分成多部分，根据已有的+1得到新的。<br>时间<code>O(n)</code>，空间<code>O(1)</code>。  </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">countBits</span><span class="params">(<span class="keyword">int</span> num)</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; <span class="title">res</span><span class="params">(<span class="number">1</span>, <span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; ; k++) &#123;</span><br><span class="line">            <span class="keyword">int</span> sz = <span class="built_in">pow</span>(<span class="number">2</span>, k);</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; sz; i++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (sz + i &gt; num)</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                res.push_back(<span class="number">1</span> + res[i]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (res.size() == num + <span class="number">1</span>)</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h2 id="2-奇偶动态规划"><a href="#2-奇偶动态规划" class="headerlink" title="2. 奇偶动态规划"></a>2. 奇偶动态规划</h2>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/counting-bits/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
