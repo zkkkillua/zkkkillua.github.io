@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/github-apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-github-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-github-16x16-next.png">
+  <link rel="mask-icon" href="/images/github-logo.svg" color="#222">
+  <meta name="google-site-verification" content="RTgcuE8O8uGo_CfqJBTz1zjZZiqDrsw0FN3QntVp6iQ">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zkkkillua.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一. 隔离级别简介数据库的隔离级别主要有四种：  读未提交（Read Uncommitted）：最低的隔离级别，允许读取尚未提交的数据变更，可能导致脏读、幻读或不可重复读。 读已提交（Read Committed）：大多数数据库系统的默认隔离级别（如Oracle, PostgreSQL）。保证了一个事务在读取数据时，那些已经被其他完成的事务修改的数据，可以被当前事务读取。防止了脏读，但幻读和不可重">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据库隔离级别与解决方案">
+<meta property="og:url" content="https://zkkkillua.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E4%B8%8E%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/index.html">
+<meta property="og:site_name" content="zkkKillua&#39;s Blog">
+<meta property="og:description" content="一. 隔离级别简介数据库的隔离级别主要有四种：  读未提交（Read Uncommitted）：最低的隔离级别，允许读取尚未提交的数据变更，可能导致脏读、幻读或不可重复读。 读已提交（Read Committed）：大多数数据库系统的默认隔离级别（如Oracle, PostgreSQL）。保证了一个事务在读取数据时，那些已经被其他完成的事务修改的数据，可以被当前事务读取。防止了脏读，但幻读和不可重">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-03-02T12:55:04.000Z">
+<meta property="article:modified_time" content="2024-03-02T13:18:39.641Z">
+<meta property="article:author" content="zkkKillua">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://zkkkillua.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E4%B8%8E%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>数据库隔离级别与解决方案 | zkkKillua's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zkkKillua's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/zkkkillua" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zkkkillua.github.io/%E6%95%B0%E6%8D%AE%E5%BA%93%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E4%B8%8E%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="zkkKillua">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zkkKillua's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据库隔离级别与解决方案
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-03-02 20:55:04 / 修改时间：21:18:39" itemprop="dateCreated datePublished" datetime="2024-03-02T20:55:04+08:00">2024-03-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithms/" itemprop="url" rel="index"><span itemprop="name">algorithms</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/algorithms/sql/" itemprop="url" rel="index"><span itemprop="name">sql</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="far fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一-隔离级别简介"><a href="#一-隔离级别简介" class="headerlink" title="一. 隔离级别简介"></a>一. 隔离级别简介</h2><p>数据库的隔离级别主要有四种：</p>
+<ol>
+<li><strong>读未提交（Read Uncommitted）</strong>：最低的隔离级别，允许读取尚未提交的数据变更，可能导致脏读、幻读或不可重复读。</li>
+<li><strong>读已提交（Read Committed）</strong>：大多数数据库系统的默认隔离级别（如Oracle, PostgreSQL）。保证了一个事务在读取数据时，那些已经被其他完成的事务修改的数据，可以被当前事务读取。防止了脏读，但幻读和不可重复读仍可能出现。</li>
+<li><strong>可重复读（Repeatable Read）</strong>：在同一事务内的查询都能够看到一致的快照数据。在MySQL InnoDB引擎中，可重复读是默认的隔离级别。它解决了脏读和不可重复读，但幻读仍可能出现。</li>
+<li><strong>串行化（Serializable）</strong>：最高的隔离级别，它通过强制事务串行执行，避免了前三个隔离级别中可能出现的问题。但这种级别会导致性能下降，因为事务完全是一个接一个地执行，没有并行性。</li>
+</ol>
+<p>以上四种隔离级别，隔离级别越高，数据一致性越好，但并发性能越差。因此在实际应用中，需要根据业务需求和系统负载情况，选择合适的隔离级别。</p>
+<h2 id="二-InnoDB各隔离级别的解决方案"><a href="#二-InnoDB各隔离级别的解决方案" class="headerlink" title="二. InnoDB各隔离级别的解决方案"></a>二. InnoDB各隔离级别的解决方案</h2><h3 id="2-1-读未提交"><a href="#2-1-读未提交" class="headerlink" title="2.1 读未提交"></a>2.1 读未提交</h3><p>有脏读，可以读到未提交的事务的修改结果，隔离性最差。</p>
+<h3 id="2-2-读已提交"><a href="#2-2-读已提交" class="headerlink" title="2.2 读已提交"></a>2.2 读已提交</h3><p>相比RU，RC在事务提交之后才能读到修改结果，解决了脏读问题。<br>在RC下，一个事务提交之后，修改对另一个事务可见，并且其他事务多次修改并提交之后，这些改动对一个事务内的多个查询都是可见的。<br>因为RC下，MVCC的每次查询都会生成新的Read View，导致每次查询都可以查到已提交的最新的数据，所以对RC来说，当前读和快照读的范围都是一致的。</p>
+<h3 id="2-3-可重复读"><a href="#2-3-可重复读" class="headerlink" title="2.3 可重复读"></a>2.3 可重复读</h3><p>在RR下，MVCC在事务开始时会生成新的Read View，事务内的每次快照读读到的结果都是一致的，但当前读能读到其他事务已提交的最新的数据。<br>那么有如下几个问题：<br><em><strong>下列问题的验证均基于MySQL 5.7版本</strong></em></p>
+<h4 id="2-3-1-当前读之后，会生成新的Read-View导致快照读结果改变吗"><a href="#2-3-1-当前读之后，会生成新的Read-View导致快照读结果改变吗" class="headerlink" title="2.3.1 当前读之后，会生成新的Read View导致快照读结果改变吗"></a>2.3.1 当前读之后，会生成新的Read View导致快照读结果改变吗</h4><p>首先给定一个测试表</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>name</th>
+<th>salary</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>a</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>2</td>
+<td>b</td>
+<td>2000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>c</td>
+<td>3000</td>
+</tr>
+</tbody></table>
+<p>然后执行如下操作并得到结果</p>
+<table>
+<thead>
+<tr>
+<th>Transaction 1</th>
+<th>Result 1</th>
+<th>Transaction 2</th>
+<th>Result 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>START TRANSACTION;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &#x3D; 3000;</td>
+<td>id|name|salary|<code>--+----+------+</code> 3|c | 3000|&#96;&#96;1 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>START TRANSACTION;</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>UPDATE tranx_test SET salary &#x3D; 5000 WHERE id IN (1, 2, 3);</td>
+<td>3 row(s) modified.</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMMIT;</td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE id &#x3D; 3 FOR UPDATE;</td>
+<td>id|name|salary|<code>--+----+------+</code> 3|c | <em><strong>5000</strong></em>|&#96;&#96;1 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE id &#x3D; 3;</td>
+<td>id|name|salary|<code>--+----+------+</code> 3|c | <em><strong>3000</strong></em>|&#96;&#96;1 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &#x3D; 5000;</td>
+<td>id|name|salary|<code>--+----+------+</code>0 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>UPDATE tranx_test SET name &#x3D; “CCC” WHERE id &#x3D; 3;</td>
+<td>1 row(s) modified.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE id &#x3D; 3;</td>
+<td>id|name|salary|<code>--+----+------+</code> 3|<em><strong>CCC</strong></em> | <em><strong>5000</strong></em>|&#96;&#96;1 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &#x3D; 5000;</td>
+<td>id|name|salary|<code>--+----+------+</code> 3|<em><strong>CCC</strong></em> | <em><strong>5000</strong></em>|&#96;&#96;1 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE id &#x3D; 1;</td>
+<td>id|name|salary|<code>--+----+------+</code> 1|a | 1000|&#96;&#96;1 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>COMMIT;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<ol>
+<li>首先在事务1开启后，生成了一个Read View，并查询到与原表相符的数据。</li>
+<li>事务2将所有salary修改为5000后提交。</li>
+<li>事务1使用 SELECT … FOR UPDATE 进行当前读，读到了最新salary&#x3D;5000的数据，<strong>但之后再进行快照读，读到的还是原始的事务1刚开始时的快照salary&#x3D;3000</strong>。</li>
+<li>事务1使用 UPDATE 进行当前读，修改了id&#x3D;3的name，<strong>之后再进行快照读，读到的是最新的数据+事务1本次UPDATE修改后的数据，salary&#x3D;5000且name&#x3D;”CCC”，但是其他没有使用 UPDATE 进行当前读的数据的快照读仍然是原始的数据</strong>。</li>
+</ol>
+<p>所以很神奇，虽然 SELECT … FOR UPDATE 和 UPDATE 同为当前读，但是造成的结果并不一致：</p>
+<ul>
+<li>SELECT … FOR UPDATE 的当前读，会读到最新的数据，但是对后续的快照读不产生影响。</li>
+<li>UPDATE 的当前读，会读到最新的数据，并且后续的快照读也能读到最新的数据。</li>
+</ul>
+<p>另外，上文中的 UPDATE 是指定id修改的，再测试一下如果指定的是salary，那么这个salary应该指定事务2修改之前还是修改之后的值。<br>详细代码不写了，还是最开始的数据，被事务2改成了salary均为5000.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt; UPDATE tranx-test SET salary = 8000 WHERE salary = 3000</span><br><span class="line"></span><br><span class="line">0 row(s) modified.</span><br><span class="line"></span><br><span class="line">&gt; UPDATE tranx-test SET salary = 8000 WHERE salary = 5000</span><br><span class="line"></span><br><span class="line">3 row(s) modified.</span><br></pre></td></tr></table></figure>
+
+<p>所以，需要指定修改后的最新数据。<br><strong>那么总结一下，当前读会修改Read View吗？</strong><br>不会。Read View内其实只记录了一些事务ID，并不会存实际的数据，RR下创建后也并不会再改变。<br>在 SELECT … FOR UPDATE 时，数据并没有修改，但是 UPDATE 修改了数据，并且由于是当前读，并不会受快照影响，修改用的是最新的数据，并且由于同事务内修改是可见的，所以后续的快照读能读到最新的数据。</p>
+<h4 id="2-3-1-InnoDB的RR到底解决幻读了吗"><a href="#2-3-1-InnoDB的RR到底解决幻读了吗" class="headerlink" title="2.3.1 InnoDB的RR到底解决幻读了吗"></a>2.3.1 InnoDB的RR到底解决幻读了吗</h4><p>经常能看到说，InnoDB在RR隔离级别下，通过MVCC和next-key locks解决了幻读的问题，真的解决了吗？<br>首先是快照读，并不会加锁，并且只能读到快照，所以解决了幻读。<br>其次是当前读，会加锁，但是通过next-key locks锁住了区间，导致其他事务不能插入数据，所以解决了幻读。<br>那如果在事务开始后，当前读加锁之前，另一个事务就已经插入了数据，这会有幻读吗？<br>首先验证一下两种能够解决幻读的场景，原始数据依旧如2.3.1的初始测试表：</p>
+<table>
+<thead>
+<tr>
+<th>Transaction 1</th>
+<th>Result 1</th>
+<th>Transaction 2</th>
+<th>Result 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>START TRANSACTION;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000;</td>
+<td>id|name|salary|<code>--+----+------+</code> 1|a | 1000|<code> 2|b | 2000|</code> 3|c | 3000|&#96;&#96;3 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>START TRANSACTION;</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>INSERT INTO tranx_test values(4, “d”, 2500);</td>
+<td>1 row(s) modified.</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMMIT;</td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000;</td>
+<td>id|name|salary|<code>--+----+------+</code> 1|a | 1000|<code> 2|b | 2000|</code> 3|c | 3000|&#96;&#96;3 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>COMMIT;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>由上表，快照读不会有幻读。</p>
+<table>
+<thead>
+<tr>
+<th>Transaction 1</th>
+<th>Result 1</th>
+<th>Transaction 2</th>
+<th>Result 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>START TRANSACTION;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000 FOR UPDATE;</td>
+<td>id|name|salary|<br>–+—-+——+<br> 1|a | 1000|<br> 2|b | 2000|<br> 3|c | 3000|<br><br>3 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>START TRANSACTION;</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>INSERT INTO tranx_test values(4, “d”, 2500);</td>
+<td>这里被阻塞了，没法执行，需要事务1先提交后释放锁。</td>
+</tr>
+</tbody></table>
+<p>由上表，当前读有锁，事务2无法在事务1锁住的区间范围内插入数据，保证了事务1的查询不会出现幻读。</p>
+<p>如果当前读是在另一个事务写入之后执行的，会出现幻读吗？</p>
+<table>
+<thead>
+<tr>
+<th>Transaction 1</th>
+<th>Result 1</th>
+<th>Transaction 2</th>
+<th>Result 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>START TRANSACTION;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000;</td>
+<td>id|name|salary|<code>--+----+------+</code> 1|a | 1000|<code> 2|b | 2000|</code> 3|c | 3000|&#96;&#96;3 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>START TRANSACTION;</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>INSERT INTO tranx_test values(4, “d”, 2500);</td>
+<td>1 row(s) modified.</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMMIT;</td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000;</td>
+<td>id|name|salary|<code>--+----+------+</code> 1|a | 1000|<code> 2|b | 2000|</code> 3|c | 3000|&#96;&#96;3 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000 FOR UPDATE;</td>
+<td>id|name|salary|<code>--+----+------+</code> 1|a | 1000|<code> 2|b | 2000|</code> 3|c | 3000|<code> 4|d | 2500|</code>4 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000;</td>
+<td>id|name|salary|<code>--+----+------+</code> 1|a | 1000|<code> 2|b | 2000|</code> 3|c | 3000|&#96;&#96;3 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>COMMIT;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>由上表，当前读还是会发生幻读的，因为在当前读加锁之前，另一个事务就已经把数据写入了，当前读会读到最新的数据。</p>
+<p>如果把 SELECT … FOR UPDATE 换成 UPDATE ，也会有幻读，类似2.3.1中的结论。</p>
+<table>
+<thead>
+<tr>
+<th>Transaction 1</th>
+<th>Result 1</th>
+<th>Transaction 2</th>
+<th>Result 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>START TRANSACTION;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000;</td>
+<td>id|name|salary|<br>–+—-+——+<br> 1|a | 1000|<br> 2|b | 2000|<br> 3|c | 3000|<br><br>3 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>START TRANSACTION;</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>INSERT INTO tranx_test values(4, “d”, 2500);</td>
+<td>1 row(s) modified.</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>COMMIT;</td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000;</td>
+<td>id|name|salary|<br>–+—-+——+<br> 1|a | 1000|<br> 2|b | 2000|<br> 3|c | 3000|<br><br>3 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>UPDATE tranx_test SET name &#x3D; “DDD” WHERE salary &#x3D; 2500;</td>
+<td>1 row(s) modified.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SELECT * FROM tranx_test WHERE salary &gt;&#x3D; 1000 AND salary &lt;&#x3D; 3000;</td>
+<td>id|name|salary|<br/>–+—-+——+<br/> 1|a | 1000|<br/> 2|b | 2000|<br/> 3|c | 3000|<br/> 4|DDD | 2500|<br/><br/>4 row(s) fetched.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>COMMIT;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p>更新的时候，应该找不到符合salary&#x3D;2500的数据，但是找到并更新了，所以是发生了幻读。</p>
+<p>当前读读到最新数据并修改后，同事务内的快照读也能够看到这条改动的数据。</p>
+<p><strong>那么总结一下，InnoDB的RR解决幻读了吗？</strong></p>
+<p>解决了，但没完全解决。MVCC和next-key locks确实能在[快照读]和[当前读之后]解决幻读问题，但是如果另一个事务的插入发生在[当前读之前]，即并没有加上next-key lock，那么就仍然会发生幻读。</p>
+<h3 id="2-4-串行化"><a href="#2-4-串行化" class="headerlink" title="2.4 串行化"></a>2.4 串行化</h3><p>纯串行，确实就没幻读了，但串行就太慢了，没见用过的。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/distinct-subsequences/" rel="prev" title="115. 不同的子序列">
+      <i class="fa fa-chevron-left"></i> 115. 不同的子序列
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E7%AE%80%E4%BB%8B"><span class="nav-text">一. 隔离级别简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-InnoDB%E5%90%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-text">二. InnoDB各隔离级别的解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E8%AF%BB%E6%9C%AA%E6%8F%90%E4%BA%A4"><span class="nav-text">2.1 读未提交</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E8%AF%BB%E5%B7%B2%E6%8F%90%E4%BA%A4"><span class="nav-text">2.2 读已提交</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB"><span class="nav-text">2.3 可重复读</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-%E5%BD%93%E5%89%8D%E8%AF%BB%E4%B9%8B%E5%90%8E%EF%BC%8C%E4%BC%9A%E7%94%9F%E6%88%90%E6%96%B0%E7%9A%84Read-View%E5%AF%BC%E8%87%B4%E5%BF%AB%E7%85%A7%E8%AF%BB%E7%BB%93%E6%9E%9C%E6%94%B9%E5%8F%98%E5%90%97"><span class="nav-text">2.3.1 当前读之后，会生成新的Read View导致快照读结果改变吗</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-3-1-InnoDB%E7%9A%84RR%E5%88%B0%E5%BA%95%E8%A7%A3%E5%86%B3%E5%B9%BB%E8%AF%BB%E4%BA%86%E5%90%97"><span class="nav-text">2.3.1 InnoDB的RR到底解决幻读了吗</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E4%B8%B2%E8%A1%8C%E5%8C%96"><span class="nav-text">2.4 串行化</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="zkkKillua"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">zkkKillua</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">169</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zkkKillua</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
